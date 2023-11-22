@@ -1,0 +1,15 @@
+name: torch
+dependencies:
+  - python
+  - pip
+  - scipy
+  - pip:
+    - torch
+    - matplotlib
+    - pandas
+    - scikit-learn
+    - optuna
+    - requests
+    - beautifulsoup4
+    - torchvision
+    - tensorboard

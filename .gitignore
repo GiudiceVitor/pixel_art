@@ -1,0 +1,12 @@
+# VSCode
+.vscode/
+*.code-workspace
+
+.ipynb_checkpoints/
+*.ipynb_checkpoints/
+
+data/
+models/
+
+__pycache__/
+
