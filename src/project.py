@@ -68,6 +68,7 @@ class Project():
             loss_function_consistency = None,
             lambda_cycle = 10,
             lambda_identity = 5,
+            buffer_size=20
             ):
         '''
         Method to train the model.
@@ -92,6 +93,7 @@ class Project():
         '''
  
         self.train_loader = DataLoader(train_dataset, batch_size=batch_size, pin_memory=True, shuffle=shuffle, num_workers=4)
+        self.scaler = GradScaler()
        
         self.epochs = epochs
         self.batch_size = batch_size
@@ -103,6 +105,7 @@ class Project():
         self.loss_function_consistency = loss_function_consistency
         self.lambda_cycle = lambda_cycle
         self.lambda_identity = lambda_identity
+        self.buffer_size=buffer_size
  
         for param_groups in self.optimizer_generators.param_groups:
             param_groups['lr'] = self.learning_rate
@@ -116,8 +119,6 @@ class Project():
         self.epoch_loss_generator = torch.tensor(0.0, device=self.device)
         self.stop_training = False
 
-        self.scaler = GradScaler()
-        self.buffer_size=20
         self.buffer_discriminator_pixel = []
         self.buffer_discriminator_people = []
  
