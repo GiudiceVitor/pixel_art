@@ -62,7 +62,8 @@ class Project():
             epochs=5,
             batch_size=1,
             shuffle=True,
-            learning_rate=0.001,
+            learning_rate_generators=0.001,
+            learning_rate_discriminators=0.001,
             callbacks=[],
             loss_function_adversarial = None,
             loss_function_consistency = None,
@@ -99,7 +100,8 @@ class Project():
         self.batch_size = batch_size
         self.optimizer_generators = optimizer_generators
         self.optimizer_discriminators = optimizer_discriminators
-        self.learning_rate = learning_rate
+        self.learning_rate_generators = learning_rate_generators
+        self.learning_rate_discriminators = learning_rate_discriminators
         self.callbacks = callbacks
         self.loss_function_adversarial = loss_function_adversarial
         self.loss_function_consistency = loss_function_consistency
@@ -108,10 +110,10 @@ class Project():
         self.buffer_size=buffer_size
  
         for param_groups in self.optimizer_generators.param_groups:
-            param_groups['lr'] = self.learning_rate
+            param_groups['lr'] = self.learning_rate_generators
         
         for param_groups in self.optimizer_discriminators.param_groups:
-            param_groups['lr'] = self.learning_rate
+            param_groups['lr'] = self.learning_rate_discriminators
  
         self.train_loss_discriminator = []
         self.train_loss_generator = []
