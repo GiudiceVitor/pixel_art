@@ -3,6 +3,7 @@ from src.callbacks import CallbackHandler
 from torch.utils.data import DataLoader
 import os
 from torch.cuda.amp import GradScaler, autocast
+import random
  
  
 class Project():
@@ -17,7 +18,6 @@ class Project():
     def __init__(self):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         print("Using device:", self.device)
-        self.scaler = GradScaler()
         
  
     def compile(self, discriminator_pixel, discriminator_people, generator_pixel, generator_people, pre_train=False, pre_train_path=None):
@@ -115,6 +115,11 @@ class Project():
         self.epoch_loss_discriminator = torch.tensor(0.0, device=self.device)
         self.epoch_loss_generator = torch.tensor(0.0, device=self.device)
         self.stop_training = False
+
+        self.scaler = GradScaler()
+        self.buffer_size=20
+        self.buffer_discriminator_pixel = []
+        self.buffer_discriminator_people = []
  
         callback_handler = CallbackHandler(callbacks, learner=self)
         callback_handler.on_train_begin()
@@ -135,7 +140,14 @@ class Project():
                 # Training discriminators
                 with autocast():
                     fake_people = self.generator_people(pixel_arts)
-                    outputs_fake_people = self.discriminator_people(fake_people.detach())
+                    if len(self.buffer_discriminator_people) < self.buffer_size:
+                        self.buffer_discriminator_people.append(fake_people.detach())
+                    else:
+                        index = random.randrange(0, self.buffer_size)
+                        self.buffer_discriminator_people[index] = fake_people.detach()
+
+                    random_fake_people = self.buffer_discriminator_people[random.randrange(0, len(self.buffer_discriminator_people))]
+                    outputs_fake_people = self.discriminator_people(random_fake_people)
                     outputs_real_people = self.discriminator_people(people)
 
                     discriminator_people_real_loss = self.loss_function_adversarial(outputs_real_people, torch.ones_like(outputs_real_people))
@@ -145,7 +157,14 @@ class Project():
 
 
                     fake_pixel = self.generator_pixel(people)
-                    outputs_fake_pixel = self.discriminator_pixel(fake_pixel.detach())
+                    if len(self.buffer_discriminator_pixel) < self.buffer_size:
+                        self.buffer_discriminator_pixel.append(fake_pixel.detach())
+                    else:
+                        index = random.randrange(0, self.buffer_size)
+                        self.buffer_discriminator_pixel[index] = fake_pixel.detach()
+
+                    random_fake_pixel = self.buffer_discriminator_pixel[random.randrange(0, len(self.buffer_discriminator_pixel))]
+                    outputs_fake_pixel = self.discriminator_pixel(random_fake_pixel)
                     outputs_real_pixel = self.discriminator_pixel(pixel_arts)
 
                     discriminator_pixel_real_loss = self.loss_function_adversarial(outputs_real_pixel, torch.ones_like(outputs_real_pixel))
